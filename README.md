@@ -1,86 +1,67 @@
-# DRKS LIVE PORTAL v8 — Cloudflare Workers版
+# DRKS LIVE PORTAL v9 — Cloudflare Workers版
 
-この版は Cloudflare Pages 用ではなく、Cloudflare Workers + Static Assets 用です。
-CloudflareのBuild画面で `Deploy command: npx wrangler deploy` になっている既存プロジェクトへ、そのまま載せることを目的にしています。
+## 今回の修正
 
-## GitHubへアップロードするもの
+V8でMULTI VIEWの初期4枠が demo / URL未設定のまま残っていたため、実際の配信プレイヤーが表示されない状態を修正しました。
 
-ZIPを解凍し、**中身をリポジトリの一番上（root）へ**アップロードしてください。
+V9では初期4枠を以下の実チャンネルへ接続します。
 
-GitHubを開いたとき、少なくとも次が直下に見えていればOKです。
+- 加藤純一 / Twitch `kato_junichi0817`
+- ゆゆうた / Twitch `yuyuta0702`
+- 布団ちゃん / Twitch `indegnasen0706`
+- バトラ / Twitch `batora324`
+
+Twitch公式埋め込みプレイヤーを使用します。配信中ならLIVE、オフラインならTwitch側のオフライン表示になります。
+
+以前のV8を開いたことがあるブラウザでも、保存されている4つのdemo枠をV9起動時に実チャンネルへ自動移行します。
+
+## YouTube / Twitch / Kick
+
+- Twitch: APIキーなしでも「直接視聴」と固定チャンネルの公式埋め込みは動きます。
+- YouTube: APIキーなしでも公開LIVEページを補助的に確認します。LIVEが見つかった時だけ動画IDを使って公式プレイヤーを表示します。
+- Kick: slugを設定していれば公式player.kick.comを使用します。
+- 自動LIVE判定 / 同接表示: Twitch / Kickは公式APIのSecretsを設定すると有効になります。YouTubeもAPIキー設定時の方が安定します。
+
+## GitHubへ更新する方法
+
+このZIPを解凍し、中身を現在の `drks-live-portal2` リポジトリ直下へ上書きしてください。
+
+GitHub直下に最低限これが見える状態にします。
 
 - `wrangler.jsonc`
 - `package.json`
 - `src/`
 - `public/`
-- `README.md`
 
-旧Pages版の `functions/` は不要です。残っていても今回のWorkerは使用しませんが、混乱防止のため削除推奨です。
+Cloudflare側は今の設定のままでOKです。
 
-## Cloudflareの既存Build設定
-
-現在のWorkerプロジェクトでは以下でOKです。
-
-- Production branch: `main`
-- Build command: 空欄 / None
+- Build command: None
 - Deploy command: `npx wrangler deploy`
 - Root directory: `/`
 
-GitHubへV8をコミットしたら、Cloudflareの `Retry build` か、新しいDeployを実行してください。
+GitHubへcommitすると自動Buildされます。必要ならDeploymentsからRetry buildしてください。
 
-## 公開後のURL
+## 更新後に古い画面が残る場合
 
-WorkerのURLが例として
+V8のService Workerキャッシュを使っていたため、最初の1回だけ古い画面が残ることがあります。V9ではキャッシュ方式を修正しています。
 
-`https://drks-live-portal2.<your-subdomain>.workers.dev`
+公開URLの末尾に一度だけ `?v=9` を付けて開き、Ctrl+F5で再読み込みしてください。
 
-なら、共有するURLは標準では
+例：
 
-`https://drks-live-portal2.<your-subdomain>.workers.dev/drks-wqrgmrlzucjg5eg/`
+`https://...workers.dev/drks-wqrgmrlzucjg5eg/?v=9`
 
-です。
+## MULTI VIEW
 
-トップ `/` は404を返します。`robots.txt` も全クロール禁止です。
+- 初回から実Twitchチャンネル4窓
+- `▶ 固定チャンネル` で実チャンネル4窓へ戻せる
+- `◉ LIVE自動配置` はAPI / 公開LIVE検出で取得できた、現在LIVE中の配信だけを配置
+- URL手動追加も継続
 
-## ログインなし・URLを知っている人だけ
+## 秘密URL
 
-認証画面はありません。長い専用パスを知っている人だけが通常アクセスできる方式です。
+トップ `/` は404です。標準の専用URLは
 
-これは強いアクセス制御ではありません。URLを転送された人は閲覧できます。
-GitHubリポジトリもPrivateにすることを推奨します。
+`/drks-wqrgmrlzucjg5eg/`
 
-### 専用URLを変更したい場合
-
-Cloudflareの Worker > Settings > Variables & Secrets で通常のVariableとして
-
-`PRIVATE_SLUG = 任意の長い文字列`
-
-を設定できます。
-
-例: `PRIVATE_SLUG = drks-xxxxxxxxxxxxxxxxxxxx`
-
-V8ではWorker側でURLを書き換えるため、GitHub上のフォルダ名を変更する必要はありません。
-
-## LIVE自動取得用 Secrets
-
-なくてもサイト本体と手動マルチ視聴は動きます。
-自動LIVE判定や同接取得を安定させたい場合のみ設定してください。
-
-- `YOUTUBE_API_KEY`
-- `TWITCH_CLIENT_ID`
-- `TWITCH_CLIENT_SECRET`
-- `KICK_CLIENT_ID`
-- `KICK_CLIENT_SECRET`
-
-Cloudflareの Worker > Settings > Variables & Secrets でSecretとして登録します。
-
-## API
-
-同一Worker内で以下を処理します。
-
-- `GET /api/health`
-- `POST /api/live`
-- `POST /api/archive`
-- `GET /api/youtube-live?handle=...`
-
-ブラウザ側は専用URLの先頭パスを `X-DRKS-Access` に入れてAPIを呼ぶため、通常のトップURLからAPIだけを直接使いにくいようにしています。
+です。閲覧者ログインは不要です。

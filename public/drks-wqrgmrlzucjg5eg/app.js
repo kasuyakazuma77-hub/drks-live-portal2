@@ -14,14 +14,15 @@ const NAVS=[
   {id:'members',label:'メンバー',icon:'♙'},{id:'schedule',label:'予定',icon:'□'},{id:'archive',label:'アーカイブ',icon:'▷'},{id:'my',label:'MY DRKS',icon:'◇'}
 ];
 const DEFAULT_SOURCES=Object.fromEntries(MEMBERS.map(m=>[m.id,{youtube:m.youtube||'',twitch:m.twitch||'',kick:m.kick||''}]));
+const REAL_DEFAULT_STREAMS=[
+  {memberId:'jun',name:'JUN',platform:'Twitch',url:'https://www.twitch.tv/kato_junichi0817',subtitle:'加藤純一 / Twitch'},
+  {memberId:'yuyuta',name:'YUYUTA',platform:'Twitch',url:'https://www.twitch.tv/yuyuta0702',subtitle:'ゆゆうた / Twitch'},
+  {memberId:'futon',name:'FUTON',platform:'Twitch',url:'https://www.twitch.tv/indegnasen0706',subtitle:'布団ちゃん / Twitch'},
+  {memberId:'batora',name:'BATORA',platform:'Twitch',url:'https://www.twitch.tv/batora324',subtitle:'バトラ / Twitch'}
+];
 const DEFAULT_STATE={
   route:'home',theme:'light',favorites:['jun','yuyuta','mokou','batora'],layout:4,focusIndex:null,
-  streams:[
-    {name:'JUN',platform:'demo',url:'',subtitle:'配信URLを設定してください'},
-    {name:'YUYUTA',platform:'demo',url:'',subtitle:'配信URLを設定してください'},
-    {name:'MOKOU',platform:'demo',url:'',subtitle:'配信URLを設定してください'},
-    {name:'BATORA',platform:'demo',url:'',subtitle:'配信URLを設定してください'}
-  ],
+  streams:structuredClone(REAL_DEFAULT_STREAMS),
   savedLayouts:[{name:'Work Mode',layout:4},{name:'Event Mode',layout:6}],
   visibleTabs:['home','live','multi','members','schedule','archive','my'],liveFilter:'all',
   notifications:false,autoRefresh:true,viewerFriendlyLayout:true,memberSources:DEFAULT_SOURCES,
@@ -37,11 +38,14 @@ function apiHeaders(extra={}){return {'X-DRKS-Access':accessKey(),...extra}}
 
 function loadState(){
   try{
-    const saved=JSON.parse(localStorage.getItem('drks-state-v8')||localStorage.getItem('drks-state-v7')||localStorage.getItem('drks-state-v6')||localStorage.getItem('drks-state-v5')||localStorage.getItem('drks-state-v4')||localStorage.getItem('drks-state-v3')||localStorage.getItem('drks-state-v2')||localStorage.getItem('drks-state')||'{}');
-    return {...structuredClone(DEFAULT_STATE),...saved,memberSources:{...structuredClone(DEFAULT_SOURCES),...(saved.memberSources||{})}};
+    const saved=JSON.parse(localStorage.getItem('drks-state-v9')||localStorage.getItem('drks-state-v8')||localStorage.getItem('drks-state-v7')||localStorage.getItem('drks-state-v6')||localStorage.getItem('drks-state-v5')||localStorage.getItem('drks-state-v4')||localStorage.getItem('drks-state-v3')||localStorage.getItem('drks-state-v2')||localStorage.getItem('drks-state')||'{}');
+    const merged={...structuredClone(DEFAULT_STATE),...saved,memberSources:{...structuredClone(DEFAULT_SOURCES),...(saved.memberSources||{})}};
+    const oldDemo=Array.isArray(merged.streams)&&merged.streams.length&&merged.streams.every(x=>!x?.url||String(x?.platform||'').toLowerCase()==='demo');
+    if(oldDemo||!Array.isArray(merged.streams)||!merged.streams.length) merged.streams=structuredClone(REAL_DEFAULT_STREAMS);
+    return merged;
   }catch{return structuredClone(DEFAULT_STATE)}
 }
-function save(){localStorage.setItem('drks-state-v8',JSON.stringify(state))}
+function save(){localStorage.setItem('drks-state-v9',JSON.stringify(state))}
 function safe(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function fmtCount(n){if(n==null)return'';n=Number(n);if(!Number.isFinite(n))return'';if(n>=10000)return (n/10000).toFixed(n>=100000?0:1)+'万';if(n>=1000)return (n/1000).toFixed(n>=10000?0:1)+'K';return String(n)}
 function fmtTime(iso){if(!iso)return'';const d=new Date(iso);if(Number.isNaN(d.getTime()))return'';return d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}
@@ -76,7 +80,7 @@ function home(){
   return `<section class="route route-enter home-v5">
   <div class="home-editorial">
     <div class="home-editorial-copy">
-      <div class="hero-topline"><div class="eyebrow">DRKS STREAMING DESK / V8</div>${syncBadge()}</div>
+      <div class="hero-topline"><div class="eyebrow">DRKS STREAMING DESK / V9</div>${syncBadge()}</div>
       <div><h1>DRKS <span>LIVE</span></h1><p>配信状況、マルチ視聴、メンバー、予定、アーカイブをひとつに。情報量を増やしすぎず、今見るべき配信が最初に目に入る構成にしました。</p></div>
       <div><div class="hero-cta"><button class="pill primary" data-route="multi">マルチ視聴を開く</button><button class="pill" data-action="refresh-live">↻ 配信状況を更新</button><button class="pill" data-route="my">接続・カスタマイズ</button></div><div class="provider-row">${providerSummary()}</div></div>
     </div>
@@ -130,7 +134,7 @@ function liveMatchFor(s){if(!s?.url)return null;return liveItems().find(x=>x.url
 function platformOf(s){const p=String(s?.platform||'').toLowerCase();if(p.includes('youtube'))return'YouTube';if(p.includes('twitch'))return'Twitch';if(p.includes('kick'))return'Kick';try{const h=new URL(s?.url||'').hostname;if(h.includes('youtu'))return'YouTube';if(h.includes('twitch'))return'Twitch';if(h.includes('kick'))return'Kick'}catch{}return s?.platform||'URL'}
 function multi(){let slots=[...state.streams];while(slots.length<state.layout)slots.push(null);slots=slots.slice(0,state.layout);const active=slots.filter(Boolean);const reported=active.map(liveMatchFor).filter(Boolean).filter(x=>x.viewerCount!=null);const reportedTotal=reported.reduce((a,x)=>a+Number(x.viewerCount||0),0);return `<section class="route route-enter"><div class="section-head"><div><div class="eyebrow">MULTI VIEW / OFFICIAL PLAYERS</div><h2>複数配信をひとつの画面で</h2><p>YouTube / Twitch / Kick を最大8枠。公式埋め込みプレイヤーで視聴し、各サービス側のLIVE同接も表示します。</p></div><button class="pill primary" data-action="add-stream">＋ 配信追加</button></div>
 <div class="official-view-note liquid-panel"><div class="official-view-icon"><i></i></div><div><b>視聴カウント配慮モード</b><p>YouTubeは自動再生を使わず、公式プレイヤー内の再生ボタンから視聴開始。Twitch / Kickも公式埋め込みを可視状態で使います。実際に同接へ反映するかの最終判定は各サービス側です。</p></div><div class="official-view-stats"><span>${reported.length?`表示中の公称同接 ${fmtCount(reportedTotal)}`:'公称同接はAPI接続時に表示'}</span><button class="text-btn" data-action="view-guide">条件を見る</button></div></div>
-<div class="multi-toolbar liquid-panel"><div class="segment">${[2,4,6,8].map(n=>`<button data-layout="${n}" class="${state.layout===n?'active':''}">${n}窓</button>`).join('')}</div><div class="segment"><button data-action="equal" class="${state.focusIndex==null?'active':''}">均等</button><button data-action="focus-first" class="${state.focusIndex!=null?'active':''}">1画面強調</button></div><div class="view-layout-toggle"><span>視聴優先</span><label class="switch"><input type="checkbox" data-setting="viewerFriendlyLayout" ${state.viewerFriendlyLayout?'checked':''}><span></span></label></div><div class="multi-actions"><button class="pill" data-action="share">↗ 共有</button><button class="pill" data-action="save-layout">♡ 保存</button><button class="pill" data-action="auto-fill">◉ LIVE自動配置</button></div></div>
+<div class="multi-toolbar liquid-panel"><div class="segment">${[2,4,6,8].map(n=>`<button data-layout="${n}" class="${state.layout===n?'active':''}">${n}窓</button>`).join('')}</div><div class="segment"><button data-action="equal" class="${state.focusIndex==null?'active':''}">均等</button><button data-action="focus-first" class="${state.focusIndex!=null?'active':''}">1画面強調</button></div><div class="view-layout-toggle"><span>視聴優先</span><label class="switch"><input type="checkbox" data-setting="viewerFriendlyLayout" ${state.viewerFriendlyLayout?'checked':''}><span></span></label></div><div class="multi-actions"><button class="pill" data-action="share">↗ 共有</button><button class="pill" data-action="save-layout">♡ 保存</button><button class="pill" data-action="channel-fill">▶ 固定チャンネル</button><button class="pill" data-action="auto-fill">◉ LIVE自動配置</button></div></div>
 <div id="multiGrid" class="multi-grid ${layoutCols()} ${state.viewerFriendlyLayout?'viewer-friendly':''} ${state.focusIndex!=null?'focused':''}">${slots.map((s,i)=>s?streamTile(s,i):`<button class="empty-slot" data-empty="${i}"><span>＋</span><small>配信を追加</small></button>`).join('')}</div>
 <div class="multi-help"><span class="motion-demo"><i></i></span><div><b>手動再生を優先</b><p>特にYouTubeはプレイヤー内のネイティブ再生ボタンで開始してください。複数窓を開いただけで同接を増やす仕組みにはしていません。</p></div></div></section>`}
 function streamTile(s,i){const live=liveMatchFor(s),platform=platformOf(s);return `<article class="stream-tile liquid-tile ${state.focusIndex===i?'focus':''}" draggable="true" data-index="${i}" data-platform="${safe(platform.toLowerCase())}"><div class="tile-top"><span class="drag-grip">⠿</span><span class="live-dot"></span><b>${safe(s.name||'STREAM')}</b><span class="platform-pill">${safe(platform)}</span>${live?.viewerCount!=null?`<span class="tile-viewers">◉ ${fmtCount(live.viewerCount)}</span>`:''}<button class="tile-menu" data-tile-action="theater" data-index="${i}">THEATER</button></div><div class="player-wrap">${playerFor({...s,platform})}</div><div class="tile-foot"><a class="tile-source" href="${safe(s.url||'#')}" target="_blank" rel="noopener">元サイト ↗</a><button data-tile-action="focus" data-index="${i}">□ 大きく</button><button data-tile-action="replace" data-index="${i}">↻ 入替</button><button data-tile-action="remove" data-index="${i}">× 削除</button></div></article>`}
@@ -153,7 +157,7 @@ async function directWatch(id,preferred=''){
   if(src.twitch)choices.push(['Twitch','twitch']);
   if(src.kick)choices.push(['Kick','kick']);
   if(!choices.length)return toast('配信元が設定されていません');
-  const initial=preferred||choices[0][1];
+  const initial=preferred||(src.twitch?'twitch':src.kick?'kick':choices[0][1]);
   openModal(`${m.name} / 直接視聴`, `<div class="direct-watch"><div class="segment direct-tabs">${choices.map(([label,id2])=>`<button type="button" data-direct-platform="${id2}" data-member="${m.id}" class="${id2===initial?'active':''}">${label}</button>`).join('')}</div><div id="directPlayer" class="direct-player"><div class="direct-loading"><span class="pulse-ring"><i></i></span><b>プレイヤーを準備しています</b></div></div><p class="hint">Twitchは公開URLでの本番利用時にHTTPSが必要です。配信側が外部埋め込みを禁止している場合は元サイトで開いてください。</p></div>`, '<button class="btn primary" value="cancel">閉じる</button>');
   $$('[data-direct-platform]').forEach(b=>b.onclick=()=>{ $$('[data-direct-platform]').forEach(x=>x.classList.remove('active'));b.classList.add('active');loadDirectPlayer(m.id,b.dataset.directPlatform)});
   await loadDirectPlayer(m.id,initial);
@@ -173,7 +177,7 @@ async function loadDirectPlayer(id,platform){
 
 function addEventModal(){openModal('予定を追加',`<div class="modal-grid"><div class="field"><label>日時</label><input type="datetime-local" id="eTime"></div><div class="field"><label>配信者</label><input id="eName" placeholder="例：ゆゆうた"></div><div class="field"><label>タイトル</label><input id="eTitle" placeholder="例：イベント配信"></div></div>`,`<button class="btn" value="cancel">キャンセル</button><button class="btn primary" type="button" id="saveEvent">追加</button>`);$('#saveEvent').onclick=()=>{const raw=$('#eTime').value;state.events.push({iso:raw?new Date(raw).toISOString():new Date().toISOString(),name:$('#eName').value||'DRKS',title:$('#eTitle').value||'配信予定'});save();$('#modal').close();render()}}
 function saveLayoutModal(){openModal('レイアウトを保存',`<div class="field"><label>名前</label><input id="layoutName" placeholder="例：大会4窓"></div>`,`<button class="btn" value="cancel">キャンセル</button><button class="btn primary" type="button" id="doSaveLayout">保存</button>`);$('#doSaveLayout').onclick=()=>{state.savedLayouts.push({name:$('#layoutName').value||`Layout ${state.savedLayouts.length+1}`,layout:state.layout,streams:structuredClone(state.streams)});save();$('#modal').close();render();toast('レイアウトを保存しました')}}
-function apiGuide(){openModal('API自動取得の設定',`<div class="modal-grid"><p class="hint">Cloudflare Pages の <b>Settings → Variables and Secrets</b> にAPI情報を登録します。秘密情報はブラウザへ配信されず、Pages Functions 側だけで使用します。</p><div class="code-card">YOUTUBE_API_KEY=...<br>TWITCH_CLIENT_ID=...<br>TWITCH_CLIENT_SECRET=...<br>KICK_CLIENT_ID=...<br>KICK_CLIENT_SECRET=...</div><p class="hint">V7ではAPIキーがない場合でもYouTubeの公開LIVEページを補助的に確認します。Twitch / Kick の自動LIVE判定と同接表示は公式API設定時に有効です。視聴者側のログインは不要です。</p></div>`,'<button class="btn primary" value="cancel">閉じる</button>')}
+function apiGuide(){openModal('API自動取得の設定',`<div class="modal-grid"><p class="hint">Cloudflare Workers の <b>Settings → Variables and Secrets</b> にAPI情報を登録します。秘密情報はブラウザへ配信されず、Worker 側だけで使用します。</p><div class="code-card">YOUTUBE_API_KEY=...<br>TWITCH_CLIENT_ID=...<br>TWITCH_CLIENT_SECRET=...<br>KICK_CLIENT_ID=...<br>KICK_CLIENT_SECRET=...</div><p class="hint">V9ではAPIキーがない場合でもYouTubeの公開LIVEページを補助的に確認します。Twitch / Kick の自動LIVE判定と同接表示は公式API設定時に有効です。視聴者側のログインは不要です。</p></div>`,'<button class="btn primary" value="cancel">閉じる</button>')}
 function viewGuide(){openModal('同接・視聴カウントについて',`<div class="modal-grid"><div class="view-rule"><b>YouTube</b><p>公式埋め込みを使用し、自動再生はOFFです。視聴回数として扱われるには、プレイヤー自身の再生ボタンから開始することが重要です。</p></div><div class="view-rule"><b>Twitch</b><p>公式プレイヤー＋parent指定を使用します。視聴優先レイアウトでは埋め込みサイズを大きく確保します。本番公開はHTTPSを推奨します。</p></div><div class="view-rule"><b>Kick</b><p>公式の player.kick.com を使用し、プレイヤーを隠したり覆ったりしません。視聴数を増やす目的の自動再生・不可視再生は行いません。</p></div><p class="hint"><b>重要:</b> このサイトから普通に実視聴するための構成です。1人が複数窓を開いた場合を何人として扱うか、無効視聴の除外、同接反映のタイミングは各サービスが判定するため、必ず「1窓＝同接+1」になる保証はありません。</p></div>`,'<button class="btn primary" value="cancel">閉じる</button>')}
 function theater(index){const s=state.streams[index];if(!s)return;const e=embedUrl(s.url);openModal(`${s.name} / THEATER`, `<div class="theater-player" data-platform="${safe(platformOf(s).toLowerCase())}">${e?`<iframe src="${safe(e)}" title="${safe((s.name||'DRKS')+' theater player')}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`:playerFor(s)}</div><p class="hint">YouTubeはプレイヤー内の再生ボタンから開始してください。埋め込み制限がある場合は元サイトで視聴してください。</p><p><a class="pill source-open" target="_blank" rel="noopener" href="${safe(s.url||'#')}">元サイトで開く ↗</a></p>`,'<button class="btn primary" value="cancel">閉じる</button>')}
 function copyShare(){const data=btoa(unescape(encodeURIComponent(JSON.stringify({layout:state.layout,streams:state.streams,focusIndex:state.focusIndex}))));const u=new URL(location.href);u.hash='mv='+data;navigator.clipboard?.writeText(u.toString()).then(()=>toast('共有URLをコピーしました')).catch(()=>openModal('共有URL',`<div class="field"><input value="${safe(u.toString())}" onclick="this.select()"></div>`))}
@@ -190,6 +194,18 @@ async function loadArchive(show=false){if(location.protocol==='file:'){runtime.a
 function schedulePoll(){clearInterval(pollTimer);if(state.autoRefresh&&location.protocol!=='file:')pollTimer=setInterval(()=>syncLive(false),60000)}
 async function setNotifications(on){if(!on){state.notifications=false;save();return}if(!('Notification'in window)){toast('このブラウザは通知に対応していません');state.notifications=false;save();return}const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();state.notifications=p==='granted';save();if(!state.notifications)toast('通知は許可されませんでした')}
 function autoFill(){const lives=liveItems().slice(0,8);if(!lives.length)return toast('自動配置できるLIVEがありません');state.streams=lives.map(x=>({name:x.roman||x.memberName,platform:x.platform,url:x.url,subtitle:x.title,viewerCount:x.viewerCount,memberId:x.memberId}));state.layout=[2,4,6,8].find(n=>n>=state.streams.length)||8;state.focusIndex=null;save();render();toast('LIVEを公式プレイヤーで配置しました')}
+function fillKnownChannels(){
+  const preferred=['jun','yuyuta','futon','batora','shoko'];
+  const rows=[];
+  for(const id of preferred){
+    const m=memberById(id),src=state.memberSources[id]||{};
+    if(!m)continue;
+    if(src.twitch)rows.push({memberId:id,name:m.roman,platform:'Twitch',url:`https://www.twitch.tv/${src.twitch}`,subtitle:`${m.name} / Twitch`});
+    else if(src.kick)rows.push({memberId:id,name:m.roman,platform:'Kick',url:`https://kick.com/${src.kick}`,subtitle:`${m.name} / Kick`});
+  }
+  if(!rows.length)return toast('固定チャンネルがありません');
+  state.streams=rows.slice(0,4);state.layout=4;state.focusIndex=null;save();render();toast('実チャンネルを4窓に配置しました');
+}
 
 function wire(){
   $$('[data-route]').forEach(b=>b.onclick=()=>go(b.dataset.route));
@@ -207,7 +223,7 @@ function wire(){
   $$('[data-load-layout]').forEach(b=>b.onclick=()=>{const l=state.savedLayouts[+b.dataset.loadLayout];state.layout=l.layout||4;if(l.streams)state.streams=structuredClone(l.streams);state.route='multi';save();render()});
   $$('[data-empty]').forEach(b=>b.onclick=()=>addStreamModal());
   $$('[data-tile-action]').forEach(b=>b.onclick=()=>{const i=+b.dataset.index,a=b.dataset.tileAction;if(a==='remove'){state.streams.splice(i,1);state.focusIndex=null;save();render()}else if(a==='replace')addStreamModal(i);else if(a==='focus'){state.focusIndex=state.focusIndex===i?null:i;save();render()}else if(a==='theater')theater(i)});
-  $$('[data-action]').forEach(b=>{const a=b.dataset.action;if(a==='add-stream')b.onclick=()=>addStreamModal();if(a==='add-event')b.onclick=addEventModal;if(a==='share')b.onclick=copyShare;if(a==='save-layout')b.onclick=saveLayoutModal;if(a==='equal')b.onclick=()=>{state.focusIndex=null;save();render()};if(a==='focus-first')b.onclick=()=>{state.focusIndex=0;save();render()};if(a==='theme')b.onclick=toggleTheme;if(a==='reset')b.onclick=()=>{localStorage.removeItem('drks-state-v7');localStorage.removeItem('drks-state-v6');localStorage.removeItem('drks-state-v5');localStorage.removeItem('drks-state-v4');localStorage.removeItem('drks-state-v3');localStorage.removeItem('drks-state-v2');state=structuredClone(DEFAULT_STATE);render();toast('初期状態に戻しました')};if(a==='refresh-live')b.onclick=()=>syncLive(true);if(a==='refresh-archive')b.onclick=()=>loadArchive(true);if(a==='open-api-guide')b.onclick=apiGuide;if(a==='view-guide')b.onclick=viewGuide;if(a==='auto-fill')b.onclick=autoFill});
+  $$('[data-action]').forEach(b=>{const a=b.dataset.action;if(a==='add-stream')b.onclick=()=>addStreamModal();if(a==='add-event')b.onclick=addEventModal;if(a==='share')b.onclick=copyShare;if(a==='save-layout')b.onclick=saveLayoutModal;if(a==='equal')b.onclick=()=>{state.focusIndex=null;save();render()};if(a==='focus-first')b.onclick=()=>{state.focusIndex=0;save();render()};if(a==='theme')b.onclick=toggleTheme;if(a==='reset')b.onclick=()=>{['drks-state-v9','drks-state-v8','drks-state-v7','drks-state-v6','drks-state-v5','drks-state-v4','drks-state-v3','drks-state-v2','drks-state'].forEach(k=>localStorage.removeItem(k));state=structuredClone(DEFAULT_STATE);save();render();toast('初期状態に戻しました')};if(a==='refresh-live')b.onclick=()=>syncLive(true);if(a==='refresh-archive')b.onclick=()=>loadArchive(true);if(a==='open-api-guide')b.onclick=apiGuide;if(a==='view-guide')b.onclick=viewGuide;if(a==='auto-fill')b.onclick=autoFill;if(a==='channel-fill')b.onclick=fillKnownChannels});
   let dragged=null;$$('.stream-tile[draggable]').forEach(t=>{t.addEventListener('dragstart',()=>{dragged=+t.dataset.index;t.classList.add('dragging')});t.addEventListener('dragend',()=>t.classList.remove('dragging'));t.addEventListener('dragover',e=>e.preventDefault());t.addEventListener('drop',e=>{e.preventDefault();const to=+t.dataset.index;if(dragged==null||dragged===to)return;const [m]=state.streams.splice(dragged,1);state.streams.splice(to,0,m);state.focusIndex=null;save();render()})});
   setupHomeCarousel();
 }
@@ -217,4 +233,4 @@ $('#quickTray').onclick=e=>{const b=e.target.closest('[data-quick]');if(!b)retur
 window.addEventListener('hashchange',()=>{loadHash();render()});
 loadHash();render();setTimeout(()=>$('#boot').classList.add('hide'),750);schedulePoll();
 if(location.protocol!=='file:')setTimeout(()=>syncLive(false),500);
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});

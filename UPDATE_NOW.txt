@@ -1,0 +1,16 @@
+DRKS LIVE PORTAL v9 / 配信接続修正版
+
+1. ZIPを解凍
+2. GitHubの drks-live-portal2 を開く
+3. V9の中身をリポジトリ直下へ上書き
+4. Commit changes
+5. CloudflareのDeployが自動で始まるのを待つ
+   始まらない場合: Deployments → Retry build
+6. 緑チェックになったら公開URLへ
+7. 末尾に ?v=9 を付けて一度開く
+8. Ctrl+F5
+
+MULTI VIEWは初期状態から
+JUN / YUYUTA / FUTON / BATORA の実Twitch公式プレイヤーになります。
+
+まだdemo表示なら MULTI VIEW →「▶ 固定チャンネル」を押してください。
