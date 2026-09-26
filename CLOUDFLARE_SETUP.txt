@@ -1,0 +1,23 @@
+Cloudflare Pages 設定
+
+1) GitHubリポジトリは Private 推奨
+2) ZIPを解凍した「中身」をGitHubのルートへアップロード
+3) Cloudflare > Workers & Pages > Create application > Pages > Import an existing Git repository
+4) 対象GitHubリポジトリを選択
+5) 設定:
+   Production branch: main
+   Framework preset: None
+   Build command: 空欄
+   Build output directory: public
+   Root directory: / のまま
+6) Deploy
+7) 公開後は下記URLを開く
+   https://＜発行されたドメイン＞/drks-wqrgmrlzucjg5eg/
+
+API自動取得を使う場合:
+Settings > Variables and Secrets > Add
+YOUTUBE_API_KEY
+TWITCH_CLIENT_ID
+TWITCH_CLIENT_SECRET
+KICK_CLIENT_ID
+KICK_CLIENT_SECRET
