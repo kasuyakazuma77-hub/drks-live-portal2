@@ -1,0 +1,23 @@
+DRKS LIVE PORTAL v8 / 今のCloudflare画面から公開する手順
+
+1. このZIPを解凍する
+2. GitHubの drks-live-portal2 リポジトリを開く
+3. 旧ファイルをV8の中身で置き換える
+4. GitHubの一番上に wrangler.jsonc が見えることを確認
+5. Cloudflare > Workers & Pages > drks-live-portal2 > Deployments
+6. Retry build を押す
+
+Cloudflareの設定は今のままでOK:
+Build command: None
+Deploy command: npx wrangler deploy
+Root directory: /
+
+公開成功後:
+Workers.dev のURL末尾に
+/drks-wqrgmrlzucjg5eg/
+を付けて開く。
+
+例:
+https://drks-live-portal2.xxxxx.workers.dev/drks-wqrgmrlzucjg5eg/
+
+トップURLだけでは404になる仕様。
