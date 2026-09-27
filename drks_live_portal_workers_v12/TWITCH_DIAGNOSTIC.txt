@@ -1,0 +1,16 @@
+DRKS LIVE PORTAL v11 / Twitch診断
+
+1. GitHubをV11で上書きしてCommit
+2. CloudflareのDeploy成功を確認
+3. https://drks-live-portal2.kasuyakazuma77.workers.dev/drks-wqrgmrlzucjg5eg/?v=11 を開く
+4. Ctrl+F5
+5. LIVE > 再取得
+6. Twitchがオレンジなら、表示される「Twitch診断」を押す
+7. 診断結果の stage と message を確認
+
+stage=token: Client ID / Client Secret の組み合わせ問題が中心
+stage=validate: 発行トークンの検証エラー
+stage=helix: Twitch Helix API呼び出しエラー
+stage=complete: Twitch接続成功
+
+Secret本体は診断画面には表示されません。

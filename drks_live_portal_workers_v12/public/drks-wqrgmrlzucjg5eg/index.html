@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f7fb" />
+  <meta name="description" content="DRKSの配信・メンバー・予定・マルチ視聴をひとつにまとめるシンプルなカスタムポータル V9" />
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
+  <title>DRKS LIVE PORTAL</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="stylesheet" href="design-v4.css?v=9" />
+  <link rel="stylesheet" href="design-v5.css?v=9" />
+  <link rel="stylesheet" href="design-v6.css?v=9" />
+</head>
+<body>
+  <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+
+  <div id="boot" class="boot" aria-hidden="true"><div class="orbit"><span></span></div><div class="boot-word">DRKS</div><div class="boot-sub">STREAMING DESK</div></div>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <button class="drawer-close icon-btn" id="drawerClose" aria-label="閉じる">×</button>
+    <div class="brand-lockup"><div class="brand-mark">D</div><div><b>DRKS LIVE</b><small>YOUR STREAMING DESK</small></div></div>
+    <nav id="drawerNav" class="drawer-nav"></nav>
+    <div class="drawer-foot">
+      <div class="theme-caption">APPEARANCE</div>
+      <button id="themeToggle" class="daynight" aria-label="テーマ切替"><span class="sky"></span><span class="toggle-orb">☼</span></button>
+      <p>参考資料のカプセルUI、静かなモーション、薄いガラス表現を整理し、直接視聴と公開運用をCloudflare Workers向けに再構成したV9です。</p>
+    </div>
+  </aside>
+  <div id="drawerShade" class="drawer-shade"></div>
+
+  <div class="app-shell">
+    <header class="topbar glass">
+      <button id="menuBtn" class="icon-btn" aria-label="メニュー"><span class="hamb"><i></i><i></i><i></i></span></button>
+      <button class="brand-inline" data-route="home"><span class="brand-dot"></span><b>DRKS</b><em>LIVE</em></button>
+      <nav id="desktopNav" class="desktop-nav"></nav>
+      <div class="top-actions">
+        <button id="quickOpen" class="icon-btn soft" title="クイック操作">＋</button>
+        <button id="themeToggleTop" class="icon-btn soft" title="テーマ">◐</button>
+        <button id="profileBtn" class="profile-dot" title="MY DRKS">MY</button>
+      </div>
+    </header>
+
+    <main id="app" class="main"></main>
+
+    <nav id="bottomNav" class="bottom-nav glass"></nav>
+    <button id="quickFab" class="quick-fab" aria-label="クイック操作"><span>＋</span></button>
+    <div id="quickTray" class="quick-tray glass" aria-hidden="true">
+      <button data-quick="add">＋ 配信追加</button><button data-quick="event">☆ 予定追加</button><button data-quick="multi">▦ 4窓</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <dialog id="modal" class="modal">
+    <form method="dialog" class="modal-card glass" id="modalForm">
+      <div class="modal-head"><div><small id="modalEyebrow">DRKS</small><h3 id="modalTitle">設定</h3></div><button class="icon-btn" value="cancel" aria-label="閉じる">×</button></div>
+      <div id="modalBody"></div>
+      <div class="modal-actions" id="modalActions"></div>
+    </form>
+  </dialog>
+
+  <template id="streamTileTpl">
+    <article class="stream-tile liquid-tile" draggable="true">
+      <div class="tile-top"><span class="live-dot"></span><b class="tile-name"></b><span class="platform-pill"></span><button class="tile-menu">•••</button></div>
+      <div class="player-wrap"></div>
+      <div class="tile-foot"><button data-tile-action="focus">□ 大きく</button><button data-tile-action="replace">↻ 入替</button><button data-tile-action="remove">×</button></div>
+    </article>
+  </template>
+
+  <script src="app.js?v=9"></script>
+</body>
+</html>

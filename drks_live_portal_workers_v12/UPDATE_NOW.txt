@@ -1,0 +1,13 @@
+DRKS LIVE PORTAL V12 更新手順
+
+1. ZIPを解凍
+2. GitHub drks-live-portal2 の中身をV12で上書き
+3. Commit changes
+4. Cloudflare Deployments が緑になるまで待つ
+5. 次のURLを開く
+   https://drks-live-portal2.kasuyakazuma77.workers.dev/drks-wqrgmrlzucjg5eg/?v=12
+6. Ctrl + F5
+7. LIVE画面の Twitch ステータス横にある「Twitch診断」を押す
+8. 表示された stage / message のスクショを送る
+
+Secretそのものは表示されません。
