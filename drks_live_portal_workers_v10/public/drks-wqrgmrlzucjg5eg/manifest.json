@@ -1,0 +1,12 @@
+{
+  "name": "DRKS LIVE PORTAL",
+  "short_name": "DRKS LIVE",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#f4f7fb",
+  "icons": [
+    {"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

@@ -1,0 +1,20 @@
+DRKS LIVE PORTAL v10 / Twitch API fix
+
+修正内容:
+- Twitch Get Streams: user_login を使用
+- Twitch Get Users: login を使用
+- V9では Get Users に user_login を送っていたため、認証情報が正しくても Twitch がオレンジ（取得失敗）になる不具合がありました。
+- APIエラー時にHTTPステータスとTwitchの安全なエラーメッセージを表示しやすくしました。
+
+更新手順:
+1. ZIPを解凍
+2. GitHub drks-live-portal2 の内容をV10で上書き
+3. Commit changes
+4. CloudflareのDeployが緑になるまで待つ
+5. https://drks-live-portal2.kasuyakazuma77.workers.dev/drks-wqrgmrlzucjg5eg/?v=10 を開く
+6. Ctrl+F5
+7. LIVE → 再取得
+
+CloudflareのRuntime secretsはそのままでOK:
+TWITCH_CLIENT_ID
+TWITCH_CLIENT_SECRET
