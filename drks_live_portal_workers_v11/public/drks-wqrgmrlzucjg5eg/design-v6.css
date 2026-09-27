@@ -1,0 +1,17 @@
+/* DRKS LIVE PORTAL V6 — reliability / direct watch polish */
+.direct-watch{display:grid;gap:16px}
+.direct-tabs{width:max-content;max-width:100%}
+.direct-player{min-height:360px;border-radius:28px;overflow:hidden;background:#0d0f14;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.direct-player iframe{width:100%;height:min(62vh,620px);min-height:360px;border:0;display:block;background:#0d0f14}
+.direct-player .source-open{position:absolute;right:14px;bottom:14px;z-index:3;background:rgba(255,255,255,.88);backdrop-filter:blur(14px)}
+.direct-loading,.direct-fallback{min-height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:28px;color:#f4f5f7}
+.direct-fallback p{max-width:520px;color:rgba(244,245,247,.7);line-height:1.8}
+.direct-fallback .source-open{position:static;margin-top:4px;color:#111}
+.direct-watch.text-btn,.member-actions .direct-watch{font-weight:700}
+.private-note{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-radius:22px;background:rgba(255,255,255,.62);border:1px solid rgba(17,24,39,.07)}
+.private-note b{display:block;margin-bottom:4px}.private-note p{margin:0;color:var(--muted);line-height:1.6}
+[data-theme="dark"] .private-note{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}
+@media(max-width:720px){.direct-player,.direct-loading,.direct-fallback{min-height:260px}.direct-player iframe{height:52vh;min-height:260px}.direct-tabs{width:100%}}
+.direct-watch-section{margin-top:28px}.direct-member-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.direct-member{display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;border:1px solid rgba(17,24,39,.07);background:rgba(255,255,255,.68);border-radius:20px;transition:.22s ease;min-width:0}.direct-member:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(38,53,78,.08)}.direct-member .avatar.mini{width:38px;height:38px;min-width:38px;font-size:11px}.direct-member span:nth-child(2){min-width:0;display:grid;gap:3px}.direct-member b,.direct-member small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.direct-member small{color:var(--muted)}.direct-member em{margin-left:auto;font-style:normal}.private-url-badge{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+[data-theme="dark"] .direct-member{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.07)}
+@media(max-width:900px){.direct-member-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.direct-member-grid{grid-template-columns:1fr}}
